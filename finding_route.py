@@ -58,7 +58,11 @@ def find_route_by_streets(src_street: str, dst_street: str, gdf: GeoDataFrame, s
     streets = list(set(df_routes_intersection['nazev'].values.tolist()))
 
     street_geometry_dict = []
+    original_streets = [src_street, dst_street]
+
     for street in streets:
+        if street in original_streets:
+            continue
         df_streets = df_routes_intersection[df_routes_intersection['nazev'] == street]
         path = None
         for index, row in df_streets.iterrows():
@@ -73,7 +77,6 @@ def find_route_by_streets(src_street: str, dst_street: str, gdf: GeoDataFrame, s
                       'path': path}
         street_geometry_dict += [final_dict]
 
-    original_streets = [src_street, dst_street]
     streets_gdf_selected = streets_gdf[streets_gdf['nazev'].isin(original_streets)]
     for street in original_streets:
         path = None
@@ -86,7 +89,7 @@ def find_route_by_streets(src_street: str, dst_street: str, gdf: GeoDataFrame, s
             else:
                 path = path + [coordinates2]
         final_dict = {'street_name': street,
-                       'path': path}
+                      'path': path}
         street_geometry_dict += [final_dict]
 
     return path_coordinates, list(set(streets)), street_geometry_dict

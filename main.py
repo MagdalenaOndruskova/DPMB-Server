@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
-from starlette.responses import JSONResponse
 
 from data_preparation_street import find_square, find_nearest_street
 from finding_route import create_graph, find_route_by_streets
