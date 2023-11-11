@@ -36,9 +36,10 @@ async def get_street(longitude: float, latitude: float):
     coordinates = (float(longitude), float(latitude))
     square_index = find_square(coordinates, grid_gdf)
     streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(square_index) in x)]
-    nearest_street, path = find_nearest_street(coordinates, streets_in_square, streets_gdf)
+    nearest_street, path, color = find_nearest_street(coordinates, streets_in_square, streets_gdf)
     return {"street": nearest_street,
-            "path": path}
+            "path": path,
+            "color": color}
 
 
 @app.post("/find_route/")

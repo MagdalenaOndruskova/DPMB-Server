@@ -1,5 +1,8 @@
 from shapely import Point
 
+from street_stats import prepare_stats_count
+from utils import get_data, assign_color, get_color
+
 
 def find_nearest_street(coord, street_data, streets_gdf):
     point = Point(coord)
@@ -15,6 +18,9 @@ def find_nearest_street(coord, street_data, streets_gdf):
             nearest_street = row['nazev_x']
 
     street_found_gdf = streets_gdf[streets_gdf['nazev'] == nearest_street]
+    df_count = prepare_stats_count(get_data(), street_found_gdf)
+    df_count = assign_color(df_count)
+    color = get_color(df_count, nearest_street)
     path = None
     for index, row in street_found_gdf.iterrows():
         geometry = row['geometry']
@@ -25,7 +31,7 @@ def find_nearest_street(coord, street_data, streets_gdf):
         else:
             path = path + [coordinates2]
 
-    return nearest_street, path
+    return nearest_street, path, color
 
 
 def find_square(coord, grid_squares):
