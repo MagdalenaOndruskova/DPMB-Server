@@ -5,7 +5,7 @@ import geopandas as gpd
 
 
 def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00'):
-    event_api_url = "https://gis.brno.cz/ags1/rest/services/Hosted/WazeJams/FeatureServer/0/"  # Replace with the actual API URL
+    event_api_url = "https://gis.brno.cz/ags1/rest/services/Hosted/WazeJams/FeatureServer/0/"
     query = f"city='Brno' AND pubMillis >= TIMESTAMP '{from_time}' AND pubMillis <= TIMESTAMP '{to_time}'"
 
     url = f"{event_api_url}query?where=({query})&outFields=*&outSR=4326&f=json"
@@ -20,7 +20,6 @@ def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00'):
         gdf = gdf.drop(['blockingAlertUuid', 'objectid','globalid'], axis=1)
         return gdf
     return None
-
 
 
 def fix_encoding(value):
@@ -70,3 +69,17 @@ def get_color(df, street_name, column_name):
         return color
     else:
         return 'green'
+
+
+def get_street_path(gdf, street):
+    df_streets = gdf[gdf['nazev'] == street]
+    path = None
+    for index, row in df_streets.iterrows():
+        geometry = row['geometry']
+        coordinates = geometry.coords
+        coordinates2 = [[long, lat] for lat, long in coordinates]
+        if not path:
+            path = [coordinates2]
+        else:
+            path = path + [coordinates2]
+    return path

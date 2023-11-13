@@ -9,3 +9,5 @@ class RoutingRequestBody(BaseModel):
     src_coord: Union[Tuple[float, float], None]
     dst_coord: Union[Tuple[float, float], None]
     pass_streets: Union[List[str], None]
+    from_time: str | None
+    to_time: str | None

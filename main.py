@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 
-from data_preparation_street import find_square, find_nearest_street, find_color_of_street
+from data_preparation_street import find_square, find_nearest_street, find_color_of_street, get_nearest_street
 from finding_route import create_graph, find_route_by_streets, load_graph
 from models import RoutingRequestBody
 import geopandas as gpd
@@ -25,8 +25,10 @@ street_road_gdf = gpd.read_file("./datasets/streets_road_data.geojson")
 streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
 
 # creating graph for finding a route
-# create_graph(street_road_gdf)
-load_graph()
+create_graph(street_road_gdf)
+
+
+# G = load_graph()
 
 
 @app.get("/")
@@ -52,23 +54,29 @@ async def get_route(body: RoutingRequestBody):
         if body.pass_streets:
             path = []
             streets = []
-            indexes = []
+            streets_dict = []
             first_street = body.src_street
-            # todo merge dictionaries
             for pass_street in body.pass_streets:
                 if not pass_street:
                     continue
-                path_coordinates, streets_list, indexes_list = find_route_by_streets(first_street, pass_street, street_road_gdf, streets_gdf)
+                path_coordinates, streets_list, streets_geometry_dict = \
+                    find_route_by_streets(first_street, pass_street, body.from_time, body.to_time,
+                                          street_road_gdf, streets_gdf)
                 path += path_coordinates
                 streets += streets_list
+                streets_dict += streets_geometry_dict
                 first_street = pass_street
-            path_coordinates, streets_list, indexes_list = find_route_by_streets(first_street, body.dst_street, street_road_gdf, streets_gdf)
+            path_coordinates, streets_list, streets_geometry_dict = find_route_by_streets(first_street, body.dst_street,
+                                                                                          body.from_time, body.to_time,
+                                                                                          street_road_gdf, streets_gdf)
             path += path_coordinates
             streets += streets_list
-            indexes += indexes_list
+            streets_dict += streets_geometry_dict
+            # todo: throw out the routes not relevant to path? but what about the count? should count happen after this?
         else:
-            path, streets, street_geometry_dict = find_route_by_streets(body.src_street, body.dst_street, street_road_gdf, streets_gdf)
-            return {"streets_coord": street_geometry_dict}
+            _, _, streets_dict = find_route_by_streets(body.src_street, body.dst_street, body.from_time, body.to_time,
+                                                       street_road_gdf,streets_gdf)
+            return {"streets_coord": streets_dict}
         if not path or not streets:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -77,20 +85,9 @@ async def get_route(body: RoutingRequestBody):
         streets.append(body.src_street)
         streets.append(body.dst_street)
 
-        # return JSONResponse(content=street_geometry_dict)
-        # return {"streets": list(set(streets)),
-        #         # "streets_geometry": street_geometry_dict,
-        #         "route": path}
     elif body.src_coord and body.dst_coord:
-        source_sq_id = find_square(body.src_coord, grid_gdf)
-        streets_in_square = merged_gdf_streets[
-            merged_gdf_streets['grid_squares'].apply(lambda x: str(source_sq_id) in x)]
-        source_street = find_nearest_street(body.src_coord, streets_in_square)
-
-        dst_sq_id = find_square(body.dst_coord, grid_gdf)
-        streets_in_square = merged_gdf_streets[
-            merged_gdf_streets['grid_squares'].apply(lambda x: str(dst_sq_id) in x)]
-        dst_street = find_nearest_street(body.dst_coord, streets_in_square)
+        source_street = get_nearest_street(body.src_coord, grid_gdf, merged_gdf_streets)
+        dst_street = get_nearest_street(body.dst_coord, grid_gdf, merged_gdf_streets)
 
         path, streets, indexes = find_route_by_streets(source_street, dst_street, street_road_gdf, streets_gdf)
 
