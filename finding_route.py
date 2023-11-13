@@ -10,22 +10,29 @@ from utils import get_data, get_color, assign_color
 G = nx.Graph()
 
 
-def add_linestring_to_graph(geom):
+def add_linestring_to_graph(geom, label):
     nodes = list(geom.coords)
     for i in range(len(nodes) - 1):
         u, v = nodes[i], nodes[i+1]
         dist = Point(u).distance(Point(v))
-        G.add_edge(u, v, weight=dist)
+        G.add_edge(u, v, weight=dist, label=label)
 
 
 def create_graph(gdf):
     for _, row in gdf.iterrows():
         geom = row['geometry']
+        label = row['nazev_x']
         if isinstance(geom, LineString):
-            add_linestring_to_graph(geom)
+            add_linestring_to_graph(geom, label)
         elif isinstance(geom, MultiLineString):
             for segment in geom.geoms:
-                add_linestring_to_graph(segment)
+                add_linestring_to_graph(segment, label)
+    nx.write_graphml(G, "datasets/road_network_with_labels.graphml")
+
+
+def load_graph():
+    global G
+    G = nx.read_graphml("datasets/road_network_with_labels.graphml")
 
 
 def get_street_first_coor(street_name: str, df: GeoDataFrame):
@@ -84,7 +91,7 @@ def find_route_by_streets(src_street: str, dst_street: str, gdf: GeoDataFrame, s
                 path = path + [coordinates2]
         # TODO: color
 
-        color = get_color(df_count, street)
+        color = get_color(df_count, street, 'nazev')
         final_dict = {'street_name': street,
                       'path': path,
                       'color': color}

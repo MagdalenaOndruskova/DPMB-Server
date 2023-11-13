@@ -4,9 +4,9 @@ import requests
 import geopandas as gpd
 
 
-def get_data():
+def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00'):
     event_api_url = "https://gis.brno.cz/ags1/rest/services/Hosted/WazeJams/FeatureServer/0/"  # Replace with the actual API URL
-    query = f"city='Brno' AND pubMillis >= TIMESTAMP '2023-11-04 08:00:00' AND pubMillis <= TIMESTAMP '2023-11-10 08:00:00'"
+    query = f"city='Brno' AND pubMillis >= TIMESTAMP '{from_time}' AND pubMillis <= TIMESTAMP '{to_time}'"
 
     url = f"{event_api_url}query?where=({query})&outFields=*&outSR=4326&f=json"
     response = requests.get(url)
@@ -63,9 +63,10 @@ def assign_color(df):
     )
     return df
 
-def get_color(df, street_name):
-    if street_name in df['nazev'].values:
-        color = df.loc[df['nazev'] == street_name, 'color'].values[0]
+
+def get_color(df, street_name, column_name):
+    if street_name in df[column_name].values:
+        color = df.loc[df[column_name] == street_name, 'color'].values[0]
         return color
     else:
         return 'green'

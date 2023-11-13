@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 
-from data_preparation_street import find_square, find_nearest_street
-from finding_route import create_graph, find_route_by_streets
+from data_preparation_street import find_square, find_nearest_street, find_color_of_street
+from finding_route import create_graph, find_route_by_streets, load_graph
 from models import RoutingRequestBody
 import geopandas as gpd
 
@@ -23,7 +25,8 @@ street_road_gdf = gpd.read_file("./datasets/streets_road_data.geojson")
 streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
 
 # creating graph for finding a route
-create_graph(street_road_gdf)
+# create_graph(street_road_gdf)
+load_graph()
 
 
 @app.get("/")
@@ -32,11 +35,12 @@ async def root():
 
 
 @app.get("/reverse_geocode/street/")
-async def get_street(longitude: float, latitude: float):
+async def get_street(longitude: float, latitude: float, fromTime: str, toTime: str):
     coordinates = (float(longitude), float(latitude))
     square_index = find_square(coordinates, grid_gdf)
     streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(square_index) in x)]
-    nearest_street, path, color = find_nearest_street(coordinates, streets_in_square, streets_gdf)
+    nearest_street, path = find_nearest_street(coordinates, streets_in_square, streets_gdf)
+    color = find_color_of_street(fromTime, toTime, nearest_street)
     return {"street": nearest_street,
             "path": path,
             "color": color}
