@@ -11,3 +11,9 @@ class RoutingRequestBody(BaseModel):
     pass_streets: Union[List[str], None]
     from_time: str | None
     to_time: str | None
+
+
+class PlotDataRequestBody(BaseModel):
+    from_date_time: str | None
+    to_date_time: str | None
+    streets: Union[List[str], None]

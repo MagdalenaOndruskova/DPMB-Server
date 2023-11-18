@@ -1,13 +1,19 @@
 from datetime import datetime
 
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 
+from const import jam_api_url
+from data_for_plot import get_data_for_plot
 from data_preparation_street import find_square, find_nearest_street, find_color_of_street, get_nearest_street
 from finding_route import create_graph, find_route_by_streets, load_graph
-from models import RoutingRequestBody
+from models import RoutingRequestBody, PlotDataRequestBody
 import geopandas as gpd
+
+from street_stats import prepare_stats_count
+from utils import get_data, get_street_path
 
 app = FastAPI()
 app.add_middleware(
@@ -28,9 +34,6 @@ streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
 create_graph(street_road_gdf)
 
 
-# G = load_graph()
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -46,6 +49,15 @@ async def get_street(longitude: float, latitude: float, fromTime: str, toTime: s
     return {"street": nearest_street,
             "path": path,
             "color": color}
+
+
+@app.get("/street_coord/")
+async def get_street_coord(street: str, fromTime: str, toTime: str):
+    path = get_street_path(streets_gdf, street)
+    color = find_color_of_street(fromTime, toTime, street)
+    return {"path": path,
+            "color": color,
+            "street": street}
 
 
 @app.post("/find_route/")
@@ -75,31 +87,34 @@ async def get_route(body: RoutingRequestBody):
             # todo: throw out the routes not relevant to path? but what about the count? should count happen after this?
         else:
             _, _, streets_dict = find_route_by_streets(body.src_street, body.dst_street, body.from_time, body.to_time,
-                                                       street_road_gdf,streets_gdf)
-            return {"streets_coord": streets_dict}
-        if not path or not streets:
+                                                       street_road_gdf, streets_gdf)
+        if not streets_dict:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f'Path not found. Please add some pass streets.',
             )
-        streets.append(body.src_street)
-        streets.append(body.dst_street)
+        return {"streets_coord": streets_dict}
 
     elif body.src_coord and body.dst_coord:
         source_street = get_nearest_street(body.src_coord, grid_gdf, merged_gdf_streets)
         dst_street = get_nearest_street(body.dst_coord, grid_gdf, merged_gdf_streets)
 
-        path, streets, indexes = find_route_by_streets(source_street, dst_street, street_road_gdf, streets_gdf)
+        path, streets, streets_dict = find_route_by_streets(source_street, dst_street, street_road_gdf, streets_gdf)
 
-        if not path or not streets:
+        if not streets_dict:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f'Path not found. Please add some pass streets.',
             )
-        streets.append(source_street)
-        streets.append(dst_street)
-        return {"streets": list(set(streets)),
-                "route": path,
-                }
+        return {"streets_coord": streets_dict}
     else:
         return {"error": "Not enough information for finding a route."}
+
+
+@app.post("/data_for_plot/")
+async def get_route(body: PlotDataRequestBody):
+    data_jams = get_data_for_plot('jams', body)
+    data_alerts = get_data_for_plot('alerts', body)
+
+    return {"jams": data_jams,
+            "alerts": data_alerts}

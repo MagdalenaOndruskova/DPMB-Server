@@ -3,12 +3,14 @@ import pandas as pd
 import requests
 import geopandas as gpd
 
+from const import jam_api_url
 
-def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00'):
-    event_api_url = "https://gis.brno.cz/ags1/rest/services/Hosted/WazeJams/FeatureServer/0/"
+
+def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00',
+             api_url=jam_api_url):
     query = f"city='Brno' AND pubMillis >= TIMESTAMP '{from_time}' AND pubMillis <= TIMESTAMP '{to_time}'"
 
-    url = f"{event_api_url}query?where=({query})&outFields=*&outSR=4326&f=json"
+    url = f"{api_url}query?where=({query})&outFields=*&outSR=4326&f=json"
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -16,8 +18,8 @@ def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00'):
         gdf = gpd.read_file(content)
         gdf['pubMillis'] = pd.to_datetime(gdf['pubMillis'], unit='ms', )
         gdf['street'] = gdf.apply(lambda row: fix_encoding(row['street']), axis=1)
-        gdf['endNode'] = gdf.apply(lambda row: fix_encoding(row['endNode']), axis=1)  # do I need this col?
-        gdf = gdf.drop(['blockingAlertUuid', 'objectid','globalid'], axis=1)
+        # gdf['endNode'] = gdf.apply(lambda row: fix_encoding(row['endNode']), axis=1)  # do I need this col?
+        # gdf = gdf.drop(['blockingAlertUuid', 'objectid','globalid'], axis=1)
         return gdf
     return None
 
