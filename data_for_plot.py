@@ -11,7 +11,8 @@ def get_data_for_plot(api: str, body: PlotDataRequestBody):
     gdf = get_data(body.from_date_time, body.to_date_time, api)
     resultH = gdf.groupby([pd.Grouper(key='pubMillis', freq='H')]).size().reset_index(name='count')
     resultH['pubMillis_unix'] = resultH['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
-    data_unix = resultH[['pubMillis_unix', 'count']].values.tolist()
-    return data_unix
+    data = resultH['count'].values.tolist()
+    time_unix = resultH['pubMillis_unix'].values.tolist()
+    return data, time_unix
 
 

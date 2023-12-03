@@ -113,8 +113,9 @@ async def get_route(body: RoutingRequestBody):
 
 @app.post("/data_for_plot/")
 async def get_route(body: PlotDataRequestBody):
-    data_jams = get_data_for_plot('jams', body)
-    data_alerts = get_data_for_plot('alerts', body)
+    data_jams, time = get_data_for_plot('jams', body)
+    data_alerts, _ = get_data_for_plot('alerts', body)
 
     return {"jams": data_jams,
-            "alerts": data_alerts}
+            "alerts": data_alerts,
+            "xaxis": time}
