@@ -24,6 +24,23 @@ def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00',
     return None
 
 
+def prepare_count_df(df):
+    df = df.groupby(['street']).count().reset_index()
+    df = df.sort_values(by=['pubMillis'], ascending=False)
+    df['street'].replace('', np.nan, inplace=True)
+    df = df.dropna(subset=['street'])
+    df['count'] = df['pubMillis']
+    df = df[['street', 'count']]
+    return df
+
+
+def get_top_n(df, n):
+    streets = df['street'].values.tolist()
+    values = df['count'].values.tolist()
+    streets = streets[:n]
+    values = values[:n]
+    return streets, values
+
 def fix_encoding(value):
     try:
         fixed = value.replace('Ã¡', 'á')

@@ -1,12 +1,13 @@
 
-qpython:S117+"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8Œğ¢½1
-opython:S117+"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8Œğ¢½1
-rpython:S1177"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8«êö¢½1
-ppython:S1177"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8«êö¢½1
-Jpython:S1481D"+Remove the unused local variable "streets".(ùüéÚ8Œğ¢½1
-Lpython:S1481C"(Remove the unused local variable "path".(Áƒæ‹úÿÿÿÿ8Œğ¢½1
-xpython:S3776@"TRefactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.(í©óÕÿÿÿÿÿ8Œğ¢½1
-Xpython:S1135W"4Complete the task associated to this "TODO" comment.(½«Â»ùÿÿÿÿ8Œğ¢½1
-ipython:S3457^"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8Œğ¢½1
-spython:S930f"PAdd 2 missing arguments; 'find_route_by_streets' expects 6 positional arguments.(Æ‚ŠÕıÿÿÿÿ8Œğ¢½1
-ipython:S3457k"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8Œğ¢½1
+qpython:S117,"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8ôÊĞŸÎ1
+opython:S117,"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8õÊĞŸÎ1
+rpython:S1178"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8õÊĞŸÎ1
+ppython:S1178"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8õÊĞŸÎ1
+Jpython:S1481E"+Remove the unused local variable "streets".(ùüéÚ8õÊĞŸÎ1
+Lpython:S1481D"(Remove the unused local variable "path".(Áƒæ‹úÿÿÿÿ8õÊĞŸÎ1
+xpython:S3776A"TRefactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.(í©óÕÿÿÿÿÿ8õÊĞŸÎ1
+Xpython:S1135X"4Complete the task associated to this "TODO" comment.(½«Â»ùÿÿÿÿ8õÊĞŸÎ1
+ipython:S3457_"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8õÊĞŸÎ1
+spython:S930g"PAdd 2 missing arguments; 'find_route_by_streets' expects 6 positional arguments.(Æ‚ŠÕıÿÿÿÿ8öÊĞŸÎ1
+ipython:S3457l"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8öÊĞŸÎ1
+wpython:S117u"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(á‡¬·8öÊĞŸÎ1

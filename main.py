@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 
 from const import jam_api_url
-from data_for_plot import get_data_for_plot
+from data_for_plot import get_data_for_plot, get_data_for_plot_jams, get_data_for_plot_alerts, get_data_for_plot_bars, \
+    get_data_for_plot_alerts_type
 from data_preparation_street import find_square, find_nearest_street, find_color_of_street, get_nearest_street
 from finding_route import create_graph, find_route_by_streets, load_graph
 from models import RoutingRequestBody, PlotDataRequestBody
@@ -31,7 +32,7 @@ street_road_gdf = gpd.read_file("./datasets/streets_road_data.geojson")
 streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
 
 # creating graph for finding a route
-create_graph(street_road_gdf)
+# create_graph(street_road_gdf)
 
 
 @app.get("/")
@@ -112,10 +113,28 @@ async def get_route(body: RoutingRequestBody):
 
 
 @app.post("/data_for_plot/")
-async def get_route(body: PlotDataRequestBody):
-    data_jams, time = get_data_for_plot('jams', body)
-    data_alerts, _ = get_data_for_plot('alerts', body)
+async def get_data_for_plot(body: PlotDataRequestBody):
+    data_jams, length, level, delay, speedKMH, time = get_data_for_plot_jams(body)
+    data_alerts, _ = get_data_for_plot_alerts(body)
 
     return {"jams": data_jams,
+            "length": length,
+            "level": level,
+            "delay": delay,
+            "speedKMH": speedKMH,
             "alerts": data_alerts,
             "xaxis": time}
+
+
+@app.post("/data_for_plot_streets/")
+async def get_data_for_plot_bar(body: PlotDataRequestBody):
+    streets_jams, values_jams, streets_alerts, values_alerts = get_data_for_plot_bars(body)
+    return {"streets_jams": streets_jams,
+            "values_jams": values_jams,
+            "streets_alerts": streets_alerts,
+            "values_alerts": values_alerts}
+
+
+@app.post("/data_for_plot_alerts/")
+async def get_data_for_plot_pies(body: PlotDataRequestBody):
+    return get_data_for_plot_alerts_type(body)
