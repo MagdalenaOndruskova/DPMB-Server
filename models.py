@@ -13,6 +13,13 @@ class RoutingRequestBody(BaseModel):
     to_time: str | None
 
 
+class RoutingCoordRequestBody(BaseModel):
+    src_coord: Union[Tuple[float, float], None]
+    dst_coord: Union[Tuple[float, float], None]
+    from_time: str | None
+    to_time: str | None
+
+
 class PlotDataRequestBody(BaseModel):
     from_date_time: str | None
     to_date_time: str | None

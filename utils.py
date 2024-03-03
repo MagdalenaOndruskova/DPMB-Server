@@ -41,6 +41,7 @@ def get_top_n(df, n):
     values = values[:n]
     return streets, values
 
+
 def fix_encoding(value):
     try:
         fixed = value.replace('Ã¡', 'á')
@@ -63,7 +64,7 @@ def fix_encoding(value):
         fixed = fixed.replace('Ã¼º', 'ü')
         fixed = fixed.replace('Ã¼', 'ü')
         fixed = fixed.replace('Ã¶', 'ö')
-        fixed = fixed.replace('Â»', '»')
+        fixed = fixed.replace('Â»', '»') #ď Ď ä
 
         return fixed
     except Exception:

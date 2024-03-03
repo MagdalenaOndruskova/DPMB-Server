@@ -71,7 +71,7 @@ def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
     gdf_alerts = gdf_alerts[['type', "subtype", "pubMillis"]]
     gdf_basic_types = gdf_alerts.groupby(["type"]).count().reset_index()
     gdf_basic_types = gdf_basic_types.rename(columns={"pubMillis": "count"})
-    gdf_basic_types = gdf_basic_types.sort_values(by='type')
+    gdf_basic_types = gdf_basic_types.sort_values(by=['type', 'count'], ascending=False)
     basic_types_values = gdf_basic_types['count'].values.tolist()
     basic_types_labels = gdf_basic_types['type'].values.tolist()
     gdf_types = gdf_alerts.groupby(["type", "subtype"]).count().reset_index()
@@ -103,7 +103,7 @@ def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
     gdf_types['subtype'] = np.where((gdf_types['subtype'] != 'NOT_DEFINED') & gdf_types.apply(is_below_iqr, axis=1),
                                     'OTHERS', gdf_types['subtype'])
     gdf_types = gdf_types.groupby(['type', 'subtype']).sum().reset_index()
-    gdf_types = gdf_types.sort_values(by='subtype')
+    gdf_types = gdf_types.sort_values(by=['type', 'count'], ascending=False)
 
     # Group by 'type' and aggregate 'subtype' and 'count' into lists
     grouped_data = gdf_types.groupby('type').agg({
@@ -125,4 +125,19 @@ def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
         }
 
     return result
+
+
+def get_data_for_plot_critical_streets_alerts(body: PlotDataRequestBody):
+    gdf_alerts = get_data(body.from_date_time, body.to_date_time, event_api_url)
+    gdf_alerts = gdf_alerts[['street', "pubMillis"]]
+    gdf_alerts = gdf_alerts.rename(columns={"pubMillis": "count"})
+    gdf_alerts = gdf_alerts.groupby(["street"]).count().reset_index().sort_values(by='count', ascending=False)
+    gdf_alerts = gdf_alerts[gdf_alerts['street'].apply(len) >= 2]
+    top_10_alerts = gdf_alerts.head(10)
+    streets = top_10_alerts['street'].values.tolist()
+    values = top_10_alerts['count'].values.tolist()
+    return {
+        "streets": streets,
+        "values": values
+    }
 

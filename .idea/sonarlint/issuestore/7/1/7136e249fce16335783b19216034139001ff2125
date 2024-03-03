@@ -1,2 +1,7 @@
 
-Bpython:S1481Q"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ
+Rpython:S1172<".Remove the unused function parameter "source".(ñ€Ûèûÿÿÿÿ8ªÄ¥à1
+Wpython:S1172<"3Remove the unused function parameter "destination".(ñ€Ûèûÿÿÿÿ8«Ä¥à1
+=python:S125G"Remove this commented out code.(›˜ô‘8õô­¦à1
+Ipython:S1481["%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8®ÔÃ¥à1
+tpython:S930b"QAdd 2 missing arguments; 'prepare_data_from_path' expects 7 positional arguments.(þé½‡ùÿÿÿÿ8¯ÔÃ¥à1
+Jpython:S1481‡"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8®ÔÃ¥à1

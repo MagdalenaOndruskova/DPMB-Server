@@ -7,10 +7,10 @@ from starlette import status
 
 from const import jam_api_url
 from data_for_plot import get_data_for_plot, get_data_for_plot_jams, get_data_for_plot_alerts, get_data_for_plot_bars, \
-    get_data_for_plot_alerts_type
+    get_data_for_plot_alerts_type, get_data_for_plot_critical_streets_alerts
 from data_preparation_street import find_square, find_nearest_street, find_color_of_street, get_nearest_street
-from finding_route import create_graph, find_route_by_streets, load_graph
-from models import RoutingRequestBody, PlotDataRequestBody
+from finding_route import create_graph, find_route_by_streets, load_graph, find_nearest_point, find_route_by_coord
+from models import RoutingRequestBody, PlotDataRequestBody, RoutingCoordRequestBody
 import geopandas as gpd
 
 from street_stats import prepare_stats_count
@@ -32,7 +32,7 @@ street_road_gdf = gpd.read_file("./datasets/streets_road_data.geojson")
 streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
 
 # creating graph for finding a route
-# create_graph(street_road_gdf)
+create_graph(street_road_gdf)
 
 
 @app.get("/")
@@ -112,6 +112,21 @@ async def get_route(body: RoutingRequestBody):
         return {"error": "Not enough information for finding a route."}
 
 
+@app.post("/find_route_by_coord/")
+async def find_route_coord(body: RoutingCoordRequestBody):
+    src_in_graph = find_nearest_point(body.src_coord)
+    dst_in_graph = find_nearest_point(body.dst_coord)
+
+    path, streets, streets_dict = find_route_by_coord(src_in_graph, dst_in_graph, body.from_time, body.to_time,
+                                                      streets_gdf, grid_gdf, merged_gdf_streets)
+    if not streets_dict:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Path not found. Please add some pass streets.',
+        )
+    return {"streets_coord": streets_dict}
+
+
 @app.post("/data_for_plot/")
 async def get_data_for_plot(body: PlotDataRequestBody):
     data_jams, length, level, delay, speedKMH, time = get_data_for_plot_jams(body)
@@ -138,3 +153,8 @@ async def get_data_for_plot_bar(body: PlotDataRequestBody):
 @app.post("/data_for_plot_alerts/")
 async def get_data_for_plot_pies(body: PlotDataRequestBody):
     return get_data_for_plot_alerts_type(body)
+
+
+@app.post("/data_for_plot_critical_streets/")
+async def get_data_for_plot_critical_streets(body: PlotDataRequestBody):
+    return get_data_for_plot_critical_streets_alerts(body)
