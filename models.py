@@ -9,3 +9,18 @@ class RoutingRequestBody(BaseModel):
     src_coord: Union[Tuple[float, float], None]
     dst_coord: Union[Tuple[float, float], None]
     pass_streets: Union[List[str], None]
+    from_time: str | None
+    to_time: str | None
+
+
+class RoutingCoordRequestBody(BaseModel):
+    src_coord: Union[Tuple[float, float], None]
+    dst_coord: Union[Tuple[float, float], None]
+    from_time: str | None
+    to_time: str | None
+
+
+class PlotDataRequestBody(BaseModel):
+    from_date_time: str | None
+    to_date_time: str | None
+    streets: Union[List[str], None]

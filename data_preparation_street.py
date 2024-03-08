@@ -1,7 +1,14 @@
 from shapely import Point
 
-from street_stats import prepare_stats_count
-from utils import get_data, assign_color, get_color
+from street_stats import prepare_stats_count, get_stats_on_street
+from utils import get_data, assign_color, get_color, get_street_path
+
+
+def get_nearest_street(coord, grid_gdf, merged_gdf_streets, streets_gdf):
+    sq_id = find_square(coord, grid_gdf)
+    streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(sq_id) in x)]
+    street = find_nearest_street(coord, streets_in_square, streets_gdf)
+    return street
 
 
 def find_nearest_street(coord, street_data, streets_gdf):
@@ -17,21 +24,14 @@ def find_nearest_street(coord, street_data, streets_gdf):
             nearest_distance = distance
             nearest_street = row['nazev_x']
 
-    street_found_gdf = streets_gdf[streets_gdf['nazev'] == nearest_street]
-    df_count = prepare_stats_count(get_data(), street_found_gdf)
-    df_count = assign_color(df_count)
-    color = get_color(df_count, nearest_street)
-    path = None
-    for index, row in street_found_gdf.iterrows():
-        geometry = row['geometry']
-        coordinates = geometry.coords
-        coordinates2 = [[long, lat] for lat, long in coordinates]
-        if not path:
-            path = [coordinates2]
-        else:
-            path = path + [coordinates2]
+    # path = get_street_path(streets_gdf, nearest_street)
+    return nearest_street
 
-    return nearest_street, path, color
+
+def find_color_of_street(from_time, to_time, street):
+    df_count = get_stats_on_street(get_data(from_time, to_time), street)
+    df_count = assign_color(df_count)
+    return get_color(df_count, street, 'street')
 
 
 def find_square(coord, grid_squares):

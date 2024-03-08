@@ -1,2 +1,10 @@
 .app/venv/
 datasets/road.geojson
+__pycache__/
+
+
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+*.pyc
