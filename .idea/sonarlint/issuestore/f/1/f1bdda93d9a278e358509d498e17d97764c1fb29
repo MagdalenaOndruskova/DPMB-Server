@@ -3,8 +3,8 @@ qpython:S117,"TRename this parameter "fromTime" to match the regular expressi
 opython:S117,"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8™‹ñ à1
 rpython:S1178"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8™‹ñ à1
 ppython:S1178"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8™‹ñ à1
-Jpython:S1481E"+Remove the unused local variable "streets".(ùüéÚ8š‹ñ à1
 Lpython:S1481D"(Remove the unused local variable "path".(Áƒæ‹úÿÿÿÿ8™‹ñ à1
+Jpython:S1481E"+Remove the unused local variable "streets".(ùüéÚ8š‹ñ à1
 xpython:S3776A"TRefactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.(í©óÕÿÿÿÿÿ8š‹ñ à1
 Xpython:S1135X"4Complete the task associated to this "TODO" comment.(½«Â»ùÿÿÿÿ8š‹ñ à1
 ipython:S3457_"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8š‹ñ à1
