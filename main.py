@@ -1,16 +1,18 @@
 from datetime import datetime
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from starlette import status
+from starlette.responses import JSONResponse
 
 from const import jam_api_url
 from data_for_plot import get_data_for_plot, get_data_for_plot_jams, get_data_for_plot_alerts, get_data_for_plot_bars, \
     get_data_for_plot_alerts_type, get_data_for_plot_critical_streets_alerts
 from data_preparation_street import find_square, find_nearest_street, find_color_of_street, get_nearest_street
 from finding_route import create_graph, find_route_by_streets, load_graph, find_nearest_point, find_route_by_coord
-from models import RoutingRequestBody, PlotDataRequestBody, RoutingCoordRequestBody
+from models import RoutingRequestBody, PlotDataRequestBody, RoutingCoordRequestBody, EmailSchema
 import geopandas as gpd
 
 from street_stats import prepare_stats_count
@@ -23,6 +25,18 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
+)
+
+conf = ConnectionConfig(
+    MAIL_USERNAME="brno.waze@seznam.cz",
+    MAIL_PASSWORD="WazeDataAnalys!s123",
+    MAIL_FROM="brno.waze@seznam.cz",
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.seznam.cz",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
 )
 
 # loading files needed in different APIs calls
@@ -45,7 +59,8 @@ async def get_street(longitude: float, latitude: float, fromTime: str, toTime: s
     coordinates = (float(longitude), float(latitude))
     square_index = find_square(coordinates, grid_gdf)
     streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(square_index) in x)]
-    nearest_street, path = find_nearest_street(coordinates, streets_in_square, streets_gdf)
+    nearest_street = find_nearest_street(coordinates, streets_in_square, streets_gdf)
+    path = get_street_path(streets_gdf, nearest_street)
     color = find_color_of_street(fromTime, toTime, nearest_street)
     return {"street": nearest_street,
             "path": path,
@@ -158,3 +173,33 @@ async def get_data_for_plot_pies(body: PlotDataRequestBody):
 @app.post("/data_for_plot_critical_streets/")
 async def get_data_for_plot_critical_streets(body: PlotDataRequestBody):
     return get_data_for_plot_critical_streets_alerts(body)
+
+
+@app.post("/send_mail/")
+async def send_mail(email: EmailSchema):
+    template = f"""
+        <html>
+        <body>
+
+        <h2>{email.subject}!</h2>
+        
+        <p>{email.body}</p>
+        
+        <br><br>
+        <p>Kontakt na odosielatela: {email.from_email}</p>
+        </body>
+        </html>
+        """
+
+    message = MessageSchema(
+        subject=email.subject,
+        recipients=['brno.waze@seznam.cz'],  # List of recipients, as many as you can pass
+        body=template,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    print(message)
+
+    return JSONResponse(status_code=200, content={"message": "email has been sent"})

@@ -1,6 +1,6 @@
 from typing import Union, Tuple, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class RoutingRequestBody(BaseModel):
@@ -24,3 +24,9 @@ class PlotDataRequestBody(BaseModel):
     from_date_time: str | None
     to_date_time: str | None
     streets: Union[List[str], None]
+
+
+class EmailSchema(BaseModel):
+    subject: str
+    body: str
+    from_email: str
