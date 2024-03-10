@@ -8,7 +8,26 @@ from const import jam_api_url
 
 def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00',
              api_url=jam_api_url):
-    query = f"city='Brno' AND pubMillis >= TIMESTAMP '{from_time}' AND pubMillis <= TIMESTAMP '{to_time}'"
+    final_df = None
+
+    date_range = pd.date_range(start=pd.to_datetime(from_time), end=pd.to_datetime(to_time), freq='1D')
+    start_time = pd.to_datetime(from_time)
+    end_time = pd.to_datetime(to_time)
+
+    for i in range(len(date_range) - 1):
+        start_time = date_range[i]
+        end_time = date_range[i + 1]
+
+        final_df = get_part_data(api_url, start_time, end_time, final_df)
+
+    final_df = get_part_data(api_url, end_time, pd.to_datetime(to_time), final_df)
+    if final_df is not None:
+        return final_df
+    return None
+
+
+def get_part_data(api_url, start_time, end_time, final_df):
+    query = f"city='Brno' AND pubMillis > TIMESTAMP '{start_time}' AND pubMillis <= TIMESTAMP '{end_time}'"
 
     url = f"{api_url}query?where=({query})&outFields=*&outSR=4326&f=json"
     response = requests.get(url)
@@ -18,10 +37,11 @@ def get_data(from_time='2023-11-04 08:00:00', to_time='2023-11-10 08:00:00',
         gdf = gpd.read_file(content)
         gdf['pubMillis'] = pd.to_datetime(gdf['pubMillis'], unit='ms', )
         gdf['street'] = gdf.apply(lambda row: fix_encoding(row['street']), axis=1)
-        # gdf['endNode'] = gdf.apply(lambda row: fix_encoding(row['endNode']), axis=1)  # do I need this col?
-        # gdf = gdf.drop(['blockingAlertUuid', 'objectid','globalid'], axis=1)
-        return gdf
-    return None
+        if final_df is None:
+            final_df = gdf
+        else:
+            final_df = pd.concat([final_df, gdf], ignore_index=True)
+    return final_df
 
 
 def prepare_count_df(df):
