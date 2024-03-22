@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import networkx as nx
+import igraph as ig
 import numpy as np
 import pandas as pd
 from geopandas import GeoDataFrame
@@ -24,6 +25,7 @@ def add_linestring_to_graph(geom, label):
 
 
 def create_graph(gdf):
+    global graph
     for _, row in gdf.iterrows():
         geom = row['geometry']
         label = row['nazev_x']
@@ -33,6 +35,13 @@ def create_graph(gdf):
             for segment in geom.geoms:
                 add_linestring_to_graph(segment, label)
     # nx.write_graphml(G, "datasets/road_network_with_labels.graphml")
+
+
+def nx_to_igraph(graphG):
+    global graph
+    edges = [(u, v) for u, v, _ in graphG.edges(data=True)]
+    graph = ig.Graph.TupleList(edges, directed=False, weights=True)
+    # return ig.Graph.TupleList(edges, directed=False, weights=True)
 
 
 def load_graph():
@@ -68,12 +77,6 @@ def prepare_data_from_path(streets_gdf: GeoDataFrame, route: LineString,  origin
     df_routes_intersection = df_routes[df_routes['not_point_intersection']]
     streets = list(set(df_routes_intersection['nazev'].values.tolist()))
 
-    # df_routes_intersection2 = df_routes_intersection[~df_routes_intersection['nazev'].isin(original_streets)]
-    # for orig_street in original_streets:
-    #     df_orig_street_in_path = df_routes_intersection[df_routes_intersection['nazev'].isin([orig_street])]
-    #     df_source_streets = streets_gdf[streets_gdf['nazev'].isin([orig_street])]
-    # df_source_streets = streets_gdf[streets_gdf['nazev'].isin(original_streets)]
-    # gdf_final = pd.concat([df_routes_intersection, df_source_streets])
     gdf_final = df_routes_intersection
     gdf_final = gdf_final.drop(['is_route', 'intersection', 'not_point_intersection'], axis=1)
     streets = list(set(streets + original_streets))
@@ -132,6 +135,8 @@ def find_route_by_coord(source: Tuple[float, float], destination: Tuple[float, f
                         grid_gdf: GeoDataFrame, merged_gdf_streets: GeoDataFrame):
     try:
         path = nx.astar_path(G, source, destination, heuristic=heuristic, weight='weight')
+
+
     except Exception as e:
         return [], [], []
 

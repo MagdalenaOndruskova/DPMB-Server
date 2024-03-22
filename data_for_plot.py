@@ -8,7 +8,7 @@ from utils import get_data, prepare_count_df, get_top_n
 
 def get_data_for_plot(api: str, body: PlotDataRequestBody):
     api = jam_api_url if api == 'jams' else event_api_url
-    gdf = get_data(body.from_date_time, body.to_date_time, api)
+    gdf = get_data(body.from_date, body.to_date, api)
     resultH = gdf.groupby([pd.Grouper(key='pubMillis', freq='H')]).size().reset_index(name='count')
     resultH['pubMillis_unix'] = resultH['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
     data = resultH['count'].values.tolist()
@@ -25,9 +25,10 @@ def mydiv(a, b):
 
 
 def get_data_for_plot_jams(body: PlotDataRequestBody):
-    gdf = get_data(body.from_date_time, body.to_date_time, jam_api_url)
+    gdf = get_data(body.from_date, body.to_date, jam_api_url)
     resultH = gdf.groupby([pd.Grouper(key='pubMillis', freq='H')]).size().reset_index(name='count')
     resultHS = gdf.groupby([pd.Grouper(key='pubMillis', freq='H')])[['length', 'level', 'delay', 'speedKMH']].sum().reset_index()
+
     resultHS = pd.merge(resultH, resultHS, on='pubMillis', how='inner')
     resultHS['delay'] = resultHS['delay'].apply(lambda x: round(x/60, 2))  # to minutes
     resultHS['length'] = resultHS['length'].apply(lambda x: round(x / 1000, 2))  # to km
@@ -35,17 +36,16 @@ def get_data_for_plot_jams(body: PlotDataRequestBody):
     resultHS['speedKMH'] = resultHS.apply(lambda row: round(mydiv(row['speedKMH'], row['count']), 2), axis=1)
 
     resultH['pubMillis_unix'] = resultH['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
-    data = resultH['count'].values.tolist()
     length = resultHS['length'].values.tolist()
     level = resultHS['level'].values.tolist()
     delay = resultHS['delay'].values.tolist()
     speedKMH = resultHS['speedKMH'].values.tolist()
     time_unix = resultH['pubMillis_unix'].values.tolist()
-    return data, length, level, delay, speedKMH, time_unix
+    return length, level, delay, speedKMH, time_unix
 
 
 def get_data_for_plot_alerts(body: PlotDataRequestBody):
-    gdf = get_data(body.from_date_time, body.to_date_time, event_api_url)
+    gdf = get_data(body.from_date, body.to_date, event_api_url)
     resultH = gdf.groupby([pd.Grouper(key='pubMillis', freq='H')]).size().reset_index(name='count')
     resultH['pubMillis_unix'] = resultH['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
     data = resultH['count'].values.tolist()
@@ -54,8 +54,8 @@ def get_data_for_plot_alerts(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_bars(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date_time, body.to_date_time, event_api_url)
-    gdf_jams = get_data(body.from_date_time, body.to_date_time, jam_api_url)
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url)
+    gdf_jams = get_data(body.from_date, body.to_date, jam_api_url)
 
     gdf_jams = prepare_count_df(gdf_jams)
     streets_jams, values_jams = get_top_n(gdf_jams, n=10)
@@ -67,7 +67,7 @@ def get_data_for_plot_bars(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date_time, body.to_date_time, event_api_url)
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url)
     gdf_alerts = gdf_alerts[['type', "subtype", "pubMillis"]]
     gdf_basic_types = gdf_alerts.groupby(["type"]).count().reset_index()
     gdf_basic_types = gdf_basic_types.rename(columns={"pubMillis": "count"})
@@ -128,7 +128,7 @@ def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_critical_streets_alerts(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date_time, body.to_date_time, event_api_url)
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url)
     gdf_alerts = gdf_alerts[['street', "pubMillis"]]
     gdf_alerts = gdf_alerts.rename(columns={"pubMillis": "count"})
     gdf_alerts = gdf_alerts.groupby(["street"]).count().reset_index().sort_values(by='count', ascending=False)

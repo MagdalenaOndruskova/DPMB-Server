@@ -21,8 +21,8 @@ class RoutingCoordRequestBody(BaseModel):
 
 
 class PlotDataRequestBody(BaseModel):
-    from_date_time: str | None
-    to_date_time: str | None
+    from_date: str | None
+    to_date: str | None
     streets: Union[List[str], None]
 
 

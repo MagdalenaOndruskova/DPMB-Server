@@ -22,3 +22,9 @@ C
 :
 
 Dockerfile,6\6\6651ddff6eb82c840ced7c1dddee15c6e1913dd4
+I
+datasets/data_per_day.csv,e\1\e170bb8f7ff19fa51a250ffedac3cb0aeaf82846
+K
+datasets/data_per_day02.csv,e\6\e6c9b57d614b606f3f66e473cb9fa0957b75b219
+Q
+!datasets/streets_exploded.geojson,8\5\85203ae3422f851f961c0c0aecdf7abebe7f24b6
