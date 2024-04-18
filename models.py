@@ -24,6 +24,7 @@ class PlotDataRequestBody(BaseModel):
     from_date: str | None
     to_date: str | None
     streets: Union[List[str], None]
+    route: Union[List[List[float]], None]
 
 
 class EmailSchema(BaseModel):

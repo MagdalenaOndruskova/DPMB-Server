@@ -54,8 +54,8 @@ def get_data_for_plot_alerts(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_bars(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url)
-    gdf_jams = get_data(body.from_date, body.to_date, jam_api_url)
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS")
+    gdf_jams = get_data(body.from_date, body.to_date, jam_api_url, "JAMS")
 
     gdf_jams = prepare_count_df(gdf_jams)
     streets_jams, values_jams = get_top_n(gdf_jams, n=10)
@@ -67,41 +67,16 @@ def get_data_for_plot_bars(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url)
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS")
     gdf_alerts = gdf_alerts[['type', "subtype", "pubMillis"]]
     gdf_basic_types = gdf_alerts.groupby(["type"]).count().reset_index()
     gdf_basic_types = gdf_basic_types.rename(columns={"pubMillis": "count"})
-    gdf_basic_types = gdf_basic_types.sort_values(by=['type', 'count'], ascending=False)
+    gdf_basic_types = gdf_basic_types.sort_values(by=['count'], ascending=False)
     basic_types_values = gdf_basic_types['count'].values.tolist()
     basic_types_labels = gdf_basic_types['type'].values.tolist()
     gdf_types = gdf_alerts.groupby(["type", "subtype"]).count().reset_index()
     gdf_types = gdf_types.rename(columns={"pubMillis": "count"})
     gdf_types = gdf_types.replace("", "NOT_DEFINED")
-
-    # Identify types with more than 4 subtypes
-    types_with_more_than_4_subtypes = gdf_types['type'].value_counts()[gdf_types['type'].value_counts() > 4].index
-
-    # Create an empty DataFrame to store IQR information
-    iqr_df = pd.DataFrame(columns=['type', 'iqr'])
-
-    # Iterate over types with more than 4 subtypes and calculate IQR
-    for type_name in types_with_more_than_4_subtypes:
-        type_data = gdf_types[gdf_types['type'] == type_name]
-        iqr = type_data['count'].quantile([0.25, 0.75]).diff().iloc[-1]
-        iqr_df = pd.concat([iqr_df, pd.DataFrame({'type': [type_name], 'iqr': [iqr]})])
-
-    # Merge the IQR information back to the original DataFrame
-    gdf_types = pd.merge(gdf_types, iqr_df, on='type', how='left')
-
-    # Create a function to check if a count is less than the IQR for a given type
-    def is_below_iqr(row):
-        if pd.notna(row['iqr']):
-            return row['count'] < row['iqr']
-        return False
-
-    # Apply the function to create a new subtype 'others' for counts below IQR
-    gdf_types['subtype'] = np.where((gdf_types['subtype'] != 'NOT_DEFINED') & gdf_types.apply(is_below_iqr, axis=1),
-                                    'OTHERS', gdf_types['subtype'])
     gdf_types = gdf_types.groupby(['type', 'subtype']).sum().reset_index()
     gdf_types = gdf_types.sort_values(by=['type', 'count'], ascending=False)
 

@@ -12,7 +12,7 @@ from starlette.responses import JSONResponse
 from data_for_plot import get_data_for_plot_bars, \
     get_data_for_plot_alerts_type, get_data_for_plot_critical_streets_alerts
 from data_preparation_street import find_square, find_nearest_street, get_nearest_street
-from finding_route import find_route_by_streets, find_nearest_point, find_route_by_coord
+from finding_route import find_route_by_streets, find_nearest_point, find_route_by_coord, create_graph
 from models import RoutingRequestBody, PlotDataRequestBody, RoutingCoordRequestBody, EmailSchema
 import geopandas as gpd
 
@@ -21,7 +21,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from utils import get_street_path, get_final_counts, load_data_from_file, load_data_for_streets, \
-    get_paths_for_each_street
+    get_paths_for_each_street, get_points_for_drawing_alerts
 from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
@@ -50,11 +50,11 @@ conf = ConnectionConfig(
 # loading files needed in different APIs calls
 grid_gdf = gpd.read_file("./datasets/streets_grid.geojson")
 merged_gdf_streets = gpd.read_file("./datasets/streets_grid_coord.geojson")
-street_road_gdf = gpd.read_file("./datasets/streets_road_data.geojson")
 streets_gdf = gpd.read_file("./datasets/streets_exploded.geojson")
+routing_base = gpd.read_file("./datasets/new_routing_base.geojson")
 
 # creating graph for finding a route
-# create_graph(street_road_gdf)
+create_graph(routing_base)
 
 
 def update_data():
@@ -65,10 +65,10 @@ def update_data():
         df['pubMillis'] = pd.to_datetime(df['pubMillis'])
 
         one_year_ago = datetime.now() - timedelta(days=365)
-        last_value = df['pubMillis'].iloc[-4]
+        last_value = df['pubMillis'].iloc[-3]
         last_value = last_value + timedelta(hours=1)
         df_filtered = df[(df['pubMillis'] >= one_year_ago) & (df['pubMillis'] < last_value)]
-        now_value = (datetime.now() + timedelta(hours=3)).strftime('%Y-%m-%d %H:%M:%S')
+        now_value = (datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
 
         counts = get_final_counts(last_value, now_value)
         counts = pd.concat([df_filtered, counts], ignore_index=True)
@@ -99,100 +99,49 @@ async def get_street(longitude: float, latitude: float, fromTime: str, toTime: s
     square_index = find_square(coordinates, grid_gdf)
     streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(square_index) in x)]
     nearest_street = find_nearest_street(coordinates, streets_in_square, streets_gdf)
-    path, color = get_street_path(streets_gdf, nearest_street, fromTime, toTime)
-    return {"street": nearest_street,
-            "path": path,
-            "color": color}
+    streets_dict = get_street_path(streets_gdf, nearest_street, fromTime, toTime)
+    return {"streets": streets_dict}
 
 
 @app.get("/street_coord/")
 async def get_street_coord(street: str, fromTime: str, toTime: str):
-    path, color = get_street_path(streets_gdf, street, fromTime, toTime)
-    return {"path": path,
-            "color": color,
-            "street": street}
+    streets_dict = get_street_path(streets_gdf, street, fromTime, toTime)
+    return {"streets": streets_dict}
 
 
-@app.get("/all_delays/")
-async def get_all_delays(fromTime: str, toTime: str):
-    return get_paths_for_each_street(streets_gdf, fromTime, toTime)
-
-
-
-@app.post("/find_route/")
-async def get_route(body: RoutingRequestBody):
-    if body.src_street and body.dst_street:
-        if body.pass_streets:
-            path = []
-            streets = []
-            streets_dict = []
-            first_street = body.src_street
-            for pass_street in body.pass_streets:
-                if not pass_street:
-                    continue
-                path_coordinates, streets_list, streets_geometry_dict = \
-                    find_route_by_streets(first_street, pass_street, body.from_time, body.to_time,
-                                          street_road_gdf, streets_gdf)
-                path += path_coordinates
-                streets += streets_list
-                streets_dict += streets_geometry_dict
-                first_street = pass_street
-            path_coordinates, streets_list, streets_geometry_dict = find_route_by_streets(first_street, body.dst_street,
-                                                                                          body.from_time, body.to_time,
-                                                                                          street_road_gdf, streets_gdf)
-            path += path_coordinates
-            streets += streets_list
-            streets_dict += streets_geometry_dict
-            # todo: throw out the routes not relevant to path? but what about the count? should count happen after this?
-        else:
-            _, _, streets_dict = find_route_by_streets(body.src_street, body.dst_street, body.from_time, body.to_time,
-                                                       street_road_gdf, streets_gdf)
-        if not streets_dict:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Path not found. Please add some pass streets.',
-            )
-        return {"streets_coord": streets_dict}
-
-    elif body.src_coord and body.dst_coord:
-        source_street = get_nearest_street(body.src_coord, grid_gdf, merged_gdf_streets)
-        dst_street = get_nearest_street(body.dst_coord, grid_gdf, merged_gdf_streets)
-
-        path, streets, streets_dict = find_route_by_streets(source_street, dst_street, street_road_gdf, streets_gdf)
-
-        if not streets_dict:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Path not found. Please add some pass streets.',
-            )
-        return {"streets_coord": streets_dict}
-    else:
-        return {"error": "Not enough information for finding a route."}
+@app.post("/all_delays/")
+async def get_all_delays(body: PlotDataRequestBody):
+    return get_paths_for_each_street(streets_gdf, body.from_date, body.to_date)
 
 
 @app.post("/find_route_by_coord/")
 async def find_route_coord(body: RoutingCoordRequestBody):
-    src_in_graph = find_nearest_point(body.src_coord)
-    dst_in_graph = find_nearest_point(body.dst_coord)
-
-    path, streets, streets_dict = find_route_by_coord(src_in_graph, dst_in_graph, body.from_time, body.to_time,
-                                                      streets_gdf, grid_gdf, merged_gdf_streets)
+    route, streets_dict, src_street, dst_street = find_route_by_coord(body.src_coord, body.dst_coord,
+                                                                      body.from_time, body.to_time,
+                                                                      streets_gdf, grid_gdf, merged_gdf_streets)
     if not streets_dict:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f'Path not found. Please add some pass streets.',
-        )
-    return {"streets_coord": streets_dict}
+        return {'streets_coord': []}
+
+    return {"streets_coord": streets_dict,
+            "route": list(route.coords),
+            "src_street": src_street,
+            "dst_street": dst_street}
+
+
+@app.post("/draw_alerts/")
+async def get_points_alerts(body: PlotDataRequestBody):
+    points = get_points_for_drawing_alerts(body.from_date, body.to_date, body.streets, body.route)
+    return points
 
 
 @app.post("/data_for_plot_drawer/")
 async def get_data_for_plot_drawer(body: PlotDataRequestBody):
-    if not body.streets:
-        data_jams, data_alerts, time,  speedKMH, delay, level, length = \
+    if not body.streets and not body.route:
+        data_jams, data_alerts, time, speedKMH, delay, level, length = \
             load_data_from_file(body.from_date, body.to_date)
     else:
         data_jams, data_alerts, time, speedKMH, delay, level, length = \
-            load_data_for_streets(body.from_date, body.to_date, body.streets)
+            load_data_for_streets(body.from_date, body.to_date, body.streets, body.route)
 
     return {"jams": data_jams,
             "alerts": data_alerts,

@@ -1,17 +1,16 @@
 
-xpython:S117Š"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(â¾Ş¢ûÿÿÿÿ8ì˜¹æ1
-vpython:S117Š"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(â¾Ş¢ûÿÿÿÿ8ì˜¹æ1
-spython:S930•"OAdd 1 missing arguments; 'find_color_of_street' expects 4 positional arguments.(ì¦Ğ»ûÿÿÿÿ8Ø×åºæ1
-spython:S117š"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(®÷ıø8äİ¢¹æ1
-qpython:S117š"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(®÷ıø8äİ¢¹æ1
-~python:S117Ê"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(àâ·ÿÿÿÿÿ8í˜¹æ1
-xpython:S117À"YRename this local variable "resultHS" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñÕüç8í˜¹æ1
-}python:S117Ò"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(ŒÆåõÿÿÿÿÿ8í˜¹æ1
-Opython:S6735À"/Specify the "validate" parameter of this merge.(ñÕüç8í˜¹æ1
-~python:S117Ü"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ø‘„­şÿÿÿÿ8í˜¹æ1
-}python:S117ã"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(£à”Ïÿÿÿÿÿ8í˜¹æ1
-xpython:S117ï"YRename this local variable "resultHS" to match the regular expression ^[_a-z][a-z0-9_]*$.(È¬Û¦8í˜¹æ1
-Opython:S6735ï"/Specify the "validate" parameter of this merge.(È¬Û¦8í˜¹æ1
-Opython:S6735ø"/Specify the "validate" parameter of this merge.(«™É8í˜¹æ1
-Qpython:S1172€"1Remove the unused function parameter "from_time".(¡‹‡¹8Ï¹åºæ1
-Opython:S1172€"/Remove the unused function parameter "to_time".(¡‹‡¹8Ï¹åºæ1
+spython:S117È"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(µğé®8àÕÃçí1
+qpython:S117È"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(µğé®8àÕÃçí1
+spython:S117×"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(®÷ıø8àÕÃçí1
+qpython:S117×"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(®÷ıø8àÕÃçí1
+Rpython:S1481Ù"2Remove the unused local variable "unique_streets".(äİ8àÕÃçí1
+Ppython:S1481Ø"0Remove the unused local variable "streets_data".(Û²‹÷8àÕÃçí1
+xpython:S117ş"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(¦·’/8àÕÃçí1
+xpython:S117ò"YRename this local variable "resultHS" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñÕüç8àÕÃçí1
+}python:S117†"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(ŒÆåõÿÿÿÿÿ8àÕÃçí1
+Opython:S6735ò"/Specify the "validate" parameter of this merge.(ñÕüç8áÕÃçí1
+~python:S117"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ø‘„­şÿÿÿÿ8áÕÃçí1
+}python:S117—"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(£à”Ïÿÿÿÿÿ8áÕÃçí1
+xpython:S117¥"YRename this local variable "resultHS" to match the regular expression ^[_a-z][a-z0-9_]*$.(È¬Û¦8áÕÃçí1
+Opython:S6735¥"/Specify the "validate" parameter of this merge.(È¬Û¦8áÕÃçí1
+Opython:S6735®"/Specify the "validate" parameter of this merge.(«™É8áÕÃçí1

@@ -1,21 +1,7 @@
 
-qpython:S117a"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8ıÀ‰¹æ1
-opython:S117a"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8ıÀ‰¹æ1
-rpython:S117m"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8ıÀ‰¹æ1
-ppython:S117m"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8ıÀ‰¹æ1
-rpython:S117u"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¨Œ¾8ÚñŒ¹æ1
-ppython:S117u"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¨Œ¾8ıÀ‰¹æ1
-Lpython:S1481~"(Remove the unused local variable "path".(Áƒæ‹úÿÿÿÿ8ıÀ‰¹æ1
-Jpython:S1481"+Remove the unused local variable "streets".(ùüéÚ8ıÀ‰¹æ1
-xpython:S3776{"TRefactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.(í©óÕÿÿÿÿÿ8ıÀ‰¹æ1
-Ypython:S1135’"4Complete the task associated to this "TODO" comment.(½«Â»ùÿÿÿÿ8ıÀ‰¹æ1
-jpython:S3457™"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8ıÀ‰¹æ1
-lpython:S930"MAdd 1 missing arguments; 'get_nearest_street' expects 4 positional arguments.(˜ÈòŸ8şÀ‰¹æ1
-lpython:S930Ÿ"MAdd 1 missing arguments; 'get_nearest_street' expects 4 positional arguments.(Š”ëÆ8şÀ‰¹æ1
-tpython:S930¡"PAdd 2 missing arguments; 'find_route_by_streets' expects 6 positional arguments.(Æ‚ŠÕıÿÿÿÿ8şÀ‰¹æ1
-jpython:S3457¦"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8şÀ‰¹æ1
-Npython:S1481²".Replace unused local variable "path" with "_".(œæèÖ8şÀ‰¹æ1
-Qpython:S1481²"1Replace unused local variable "streets" with "_".(œæèÖ8şÀ‰¹æ1
-jpython:S3457·"EAdd replacement fields or use a normal string instead of an f-string.(‹ÍÉşÿÿÿÿ8şÀ‰¹æ1
-}python:S117¿"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(ãõøÿÿÿÿÿ8şÀ‰¹æ1
-~python:S117†"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥ÿ“»úÿÿÿÿ8şÀ‰¹æ1
+qpython:S117a"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8—Ñáæ1
+opython:S117a"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(à£¾t8—Ñáæ1
+rpython:S117k"TRename this parameter "fromTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8ÿØ¸Éí1
+ppython:S117k"RRename this parameter "toTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥¶”Ú8€Ù¸Éí1
+}python:S117Œ"YRename this local variable "speedKMH" to match the regular expression ^[_a-z][a-z0-9_]*$.(ãõøÿÿÿÿÿ8„Ù¸Éí1
+~python:S117Ó"ZRename this local variable "pubMillis" to match the regular expression ^[_a-z][a-z0-9_]*$.(¥ÿ“»úÿÿÿÿ8„Ù¸Éí1

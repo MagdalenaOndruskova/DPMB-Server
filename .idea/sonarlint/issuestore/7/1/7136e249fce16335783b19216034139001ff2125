@@ -1,8 +1,4 @@
 
-ppython:S117("RRename this parameter "graphG" to match the regular expression ^[_a-z][a-z0-9_]*$.(¹ŒÔ¨8¸Ãàä1
-=python:S125,"Remove this commented out code.(İòœ8¹Ãàä1
-Wpython:S1172E"3Remove the unused function parameter "destination".(ñ€Ûèûÿÿÿÿ8¹Ãàä1
-Rpython:S1172E".Remove the unused function parameter "source".(ñ€Ûèûÿÿÿÿ8¹Ãàä1
-Ipython:S1481^"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8ºÃàä1
-tpython:S930e"QAdd 2 missing arguments; 'prepare_data_from_path' expects 7 positional arguments.(şé½‡ùÿÿÿÿ8ºÃàä1
-Jpython:S1481Œ"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8 «ïàä1
+Ipython:S1481S"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8Ÿ§Éí1
+Ypython:S1135¢"4Complete the task associated to this "TODO" comment.(½ÒÓÅùÿÿÿÿ8Ÿ§Éí1
+Cpython:S125¬"Remove this commented out code.(ˆ÷Ş‘ùÿÿÿÿ8Ÿ§Éí1
