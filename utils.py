@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import requests
 import geopandas as gpd
+from pytz import timezone
 from shapely import LineString
 
 from const import jam_api_url, event_api_url, FILE_PATH, GREEN_COLOR, ORANGE_COLOR
@@ -69,7 +70,20 @@ def get_part_data(api_url, start_time, end_time, final_df, out_fields="*", out_s
     if response.status_code == 200:
         content = response.content.decode('utf-8')
         gdf = gpd.read_file(content)
-        gdf['pubMillis'] = pd.to_datetime(gdf['pubMillis'], unit='ms', )
+        gdf['pubMillis'] = pd.to_datetime(gdf['pubMillis'], unit='ms')
+
+        def localize_to_bratislava(timestamp):
+            # Localize the datetime object to Bratislava timezone (UTC+2)
+            bratislava_tz = timezone('Europe/Bratislava')
+            localized_datetime = timestamp.tz_localize('UTC').tz_convert(bratislava_tz)
+
+            return localized_datetime
+
+        # Apply the function to the 'pubMillis' column
+        gdf['pubMillis'] = gdf['pubMillis'].apply(localize_to_bratislava)
+        gdf['pubMillis'] = gdf['pubMillis'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        gdf['pubMillis'] = pd.to_datetime(gdf['pubMillis'])
+
         gdf['street'] = gdf.apply(lambda row: fix_encoding(row['street']), axis=1)
         if final_df is None:
             final_df = gdf
@@ -213,8 +227,6 @@ def get_street_path(gdf, street, fromTime, toTime, data=gpd.GeoDataFrame()):
 
 
 def get_paths_for_each_street(gdf, fromTime, toTime):
-    streets_data = []
-    unique_streets = gdf['nazev'].unique()
     gdf_data = get_data(fromTime, toTime, out_fields="pubMillis,street")
     return get_street_path(gdf, None, None, None, gdf_data)
 
@@ -247,19 +259,36 @@ def load_data_for_streets(from_date, to_date, streets, route):
 
     final_df_alerts = final_df_alerts.groupby(pd.Grouper(key='pubMillis', freq='1H')).size().reset_index(
         name='count_alerts')
+    all_hours = pd.DataFrame(pd.date_range(start=pd.to_datetime(from_date),
+                                           end=pd.to_datetime(to_date)  + pd.Timedelta(days=1), freq='H'),
+                             columns=['pubMillis'])
+    filled_data = all_hours.merge(resultHS, on='pubMillis', how='left')
+    filled_data['length'].fillna(0, inplace=True)
+    filled_data['level'].fillna(0, inplace=True)
+    filled_data['level'] = round(filled_data['level'], 2)
+    filled_data['delay'].fillna(0, inplace=True)
+    filled_data['speedKMH'].fillna(35, inplace=True)
+    filled_data['speedKMH'] = round(filled_data['speedKMH'], 2)
 
-    resultHS['pubMillis_unix'] = resultHS['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
-    final_df_alerts['pubMillis_unix'] = final_df_alerts['pubMillis'].astype(np.int64) / int(
-        1e6)  # Convert to Unix timestamp
-    pubMillis = resultHS['pubMillis_unix'].tolist()
+    filled_data = filled_data.merge(final_df_alerts, on='pubMillis', how='left')
+    filled_data['count_jams'].fillna(0, inplace=True)  # Fill missing values in 'length' with 0
+    filled_data['count_alerts'].fillna(0, inplace=True)  # Fill missing values in 'length' with 0
 
-    count_alerts = final_df_alerts['count_alerts'].tolist()
-    count_jams = resultHS['count_jams'].tolist()
+    filtered_data = filled_data[filled_data['pubMillis'] <= datetime.now()]
 
-    length = resultHS['length'].tolist()
-    level = resultHS['level'].tolist()
-    delay = resultHS['delay'].tolist()
-    speedKMH = resultHS['speedKMH'].tolist()
+    # Fill missing values in 'length' with 0
+    filtered_data['pubMillis_unix'] = filtered_data['pubMillis'].astype(np.int64) / int(1e6)  # Convert to Unix timestamp
+    # filtered_data['pubMillis_unix'] = filtered_data['pubMillis'].astype(np.int64) / int(
+    #     1e6)  # Convert to Unix timestamp
+    pubMillis = filtered_data['pubMillis_unix'].tolist()
+
+    count_alerts = filtered_data['count_alerts'].tolist()
+    count_jams = filtered_data['count_jams'].tolist()
+
+    length = filtered_data['length'].tolist()
+    level = filtered_data['level'].tolist()
+    delay = filtered_data['delay'].tolist()
+    speedKMH = filtered_data['speedKMH'].tolist()
     return count_jams, count_alerts, pubMillis, speedKMH, delay, level, length
 
 

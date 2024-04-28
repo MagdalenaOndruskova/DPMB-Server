@@ -12,8 +12,8 @@ from starlette.responses import JSONResponse
 from data_for_plot import get_data_for_plot_bars, \
     get_data_for_plot_alerts_type, get_data_for_plot_critical_streets_alerts
 from data_preparation_street import find_square, find_nearest_street, get_nearest_street
-from finding_route import find_route_by_streets, find_nearest_point, find_route_by_coord, create_graph
-from models import RoutingRequestBody, PlotDataRequestBody, RoutingCoordRequestBody, EmailSchema
+from finding_route import find_route_by_coord, create_graph
+from models import  PlotDataRequestBody, RoutingCoordRequestBody, EmailSchema
 import geopandas as gpd
 
 import warnings
@@ -66,8 +66,7 @@ def update_data():
 
         one_year_ago = datetime.now() - timedelta(days=365)
         last_value = df['pubMillis'].iloc[-3]
-        last_value = last_value + timedelta(hours=1)
-        df_filtered = df[(df['pubMillis'] >= one_year_ago) & (df['pubMillis'] < last_value)]
+        df_filtered = df[(df['pubMillis'] >= one_year_ago) & (df['pubMillis'] < last_value + timedelta(hours=1))]
         now_value = (datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
 
         counts = get_final_counts(last_value, now_value)
@@ -84,7 +83,7 @@ def update_data():
 @app.on_event('startup')
 def init_data():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_data, 'cron', minute='*/05')
+    scheduler.add_job(update_data, 'cron', minute='*/02')
     scheduler.start()
 
 

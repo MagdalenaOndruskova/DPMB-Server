@@ -3,7 +3,7 @@ import pandas as pd
 
 from const import jam_api_url, event_api_url
 from models import PlotDataRequestBody
-from utils import get_data, prepare_count_df, get_top_n
+from utils import get_data, prepare_count_df, get_top_n, filter_df_based_geometry
 
 
 def get_data_for_plot(api: str, body: PlotDataRequestBody):
@@ -54,8 +54,12 @@ def get_data_for_plot_alerts(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_bars(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS")
-    gdf_jams = get_data(body.from_date, body.to_date, jam_api_url, "JAMS")
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS", out_streets=body.streets)
+    gdf_jams = get_data(body.from_date, body.to_date, jam_api_url, "JAMS", out_streets=body.streets)
+
+    if body.route:
+        gdf_jams = filter_df_based_geometry(gdf_jams, body.route)
+        gdf_alerts = filter_df_based_geometry(gdf_alerts, body.route)
 
     gdf_jams = prepare_count_df(gdf_jams)
     streets_jams, values_jams = get_top_n(gdf_jams, n=10)
@@ -67,8 +71,15 @@ def get_data_for_plot_bars(body: PlotDataRequestBody):
 
 
 def get_data_for_plot_alerts_type(body: PlotDataRequestBody):
-    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS")
+    gdf_alerts = get_data(body.from_date, body.to_date, event_api_url, "ALERTS", out_streets=body.streets)
+
+    if body.route:
+        gdf_alerts = filter_df_based_geometry(gdf_alerts, body.route)
+
     gdf_alerts = gdf_alerts[['type', "subtype", "pubMillis"]]
+
+
+
     gdf_basic_types = gdf_alerts.groupby(["type"]).count().reset_index()
     gdf_basic_types = gdf_basic_types.rename(columns={"pubMillis": "count"})
     gdf_basic_types = gdf_basic_types.sort_values(by=['count'], ascending=False)
