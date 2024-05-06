@@ -70,6 +70,11 @@ def prepare_data_from_path(streets_gdf: GeoDataFrame, route: LineString,  origin
     streets = list(set(streets + original_streets))
     data = get_data(from_time, to_time, out_fields="pubMillis,street", out_streets=streets)
 
+    if data.empty:
+        # If data is empty, create a new DataFrame
+        # data = pd.DataFrame({'street': streets, 'count': [0] * len(streets)})
+        gdf_final['count'] = 0
+        data = gdf_final
     df_count = count_delays_by_parts(gdf_final, data)
     return df_count
 
@@ -168,6 +173,7 @@ def find_route_by_coord(src_coord, dst_coord,
     street_geometry_dict = []
     df_count = prepare_data_from_path(streets_gdf, route, [source_street, dst_street],
                                                         from_time, to_time)
+    df_count.rename(columns={"street": "nazev"}, inplace=True)
     for index, row in df_count.iterrows():
         # path, color = get_street_path(gdf_final, street, from_time, to_time)
 

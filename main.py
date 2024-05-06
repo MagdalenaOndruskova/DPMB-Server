@@ -3,11 +3,13 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-from starlette import status
 from starlette.responses import JSONResponse
+from utils import get_street_path, get_final_counts, load_data_from_file, load_data_for_streets, \
+    get_paths_for_each_street, get_points_for_drawing_alerts
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from data_for_plot import get_data_for_plot_bars, \
     get_data_for_plot_alerts_type, get_data_for_plot_critical_streets_alerts
@@ -18,11 +20,9 @@ import geopandas as gpd
 
 import warnings
 
+# dont show warnings in log
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from utils import get_street_path, get_final_counts, load_data_from_file, load_data_for_streets, \
-    get_paths_for_each_street, get_points_for_drawing_alerts
-from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
 
@@ -58,9 +58,12 @@ create_graph(routing_base)
 
 
 def update_data():
+    """
+    function updates data calculated for whole dataset.
+    """
     file_path = "datasets/data_per_day.csv"
-    print("bezim")
     if os.path.exists(file_path):
+        # calculate data from last row -3 hours (to correct some theoretical errors)
         df = pd.read_csv(file_path)
         df['pubMillis'] = pd.to_datetime(df['pubMillis'])
 
@@ -70,9 +73,12 @@ def update_data():
         now_value = (datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
 
         counts = get_final_counts(last_value, now_value)
+        counts = counts[(counts['pubMillis'] > last_value)]
+
         counts = pd.concat([df_filtered, counts], ignore_index=True)
         counts.to_csv(file_path, index=False)
     else:
+        # file does not exist - create new one
         last_value = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
         now_value = (datetime.now() + timedelta(hours=5)).strftime('%Y-%m-%d %H:%M:%S')
         counts = get_final_counts(last_value, now_value)
@@ -82,18 +88,24 @@ def update_data():
 
 @app.on_event('startup')
 def init_data():
+    """
+    creates cron job runner, to update data every 5 minutes
+    """
     scheduler = BackgroundScheduler()
-    scheduler.add_job(update_data, 'cron', minute='*/02')
+    scheduler.add_job(update_data, 'cron', minute='*/05')
     scheduler.start()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 
 @app.get("/reverse_geocode/street/")
 async def get_street(longitude: float, latitude: float, fromTime: str, toTime: str):
+    """
+    From one coordinate returns whole street to drawn. With calculated delays on it.
+    :param longitude: longitude (float type)
+    :param latitude: latitude (float type)
+    :param fromTime: string format, from what date calculate delays
+    :param toTime: string format, to what date calculate delays
+    :return: dictionary of street
+    """
     coordinates = (float(longitude), float(latitude))
     square_index = find_square(coordinates, grid_gdf)
     streets_in_square = merged_gdf_streets[merged_gdf_streets['grid_squares'].apply(lambda x: str(square_index) in x)]
@@ -104,12 +116,22 @@ async def get_street(longitude: float, latitude: float, fromTime: str, toTime: s
 
 @app.get("/street_coord/")
 async def get_street_coord(street: str, fromTime: str, toTime: str):
+    """
+    Function returns to given street its coordinates
+    :param street: name of the street
+    :param fromTime: string format, from what date calculate delays
+    :param toTime: string format, to what date calculate delays
+    :return: calculated street
+    """
     streets_dict = get_street_path(streets_gdf, street, fromTime, toTime)
     return {"streets": streets_dict}
 
 
 @app.post("/all_delays/")
 async def get_all_delays(body: PlotDataRequestBody):
+    """
+    function return all delays
+    """
     return get_paths_for_each_street(streets_gdf, body.from_date, body.to_date)
 
 

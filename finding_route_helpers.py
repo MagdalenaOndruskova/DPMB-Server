@@ -46,7 +46,11 @@ def haversine_distance(coord1, coord2):
 def in_ellipse(coord, center, semimajor, semiminor):
     lat, lon = coord
     lat_c, lon_c = center
-    return ((lat - lat_c) ** 2) / (semimajor ** 2) + ((lon - lon_c) ** 2) / (semiminor ** 2) <= 1
+    try:
+
+        return ((lat - lat_c) ** 2) / (semimajor ** 2) + ((lon - lon_c) ** 2) / (semiminor ** 2) <= 1
+    except ZeroDivisionError:
+        return True
 
 
 def create_ellipse_subgraph(graph, center, semimajor, semiminor):

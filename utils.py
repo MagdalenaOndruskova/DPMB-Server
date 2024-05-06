@@ -37,7 +37,7 @@ def get_data(from_time='2023-11-04', to_time='2023-11-10',
     if type_api == "ALERTS" and not out_fields:
         out_fields = "pubMillis,subtype,street,type,latitude,longitude"
     for i in range(len(date_range) - 1):
-        start_time = date_range[i]
+        start_time = date_range[i] - timedelta(hours=2)
         end_time = date_range[i + 1]
 
         final_df = get_part_data(api_url, start_time, end_time, final_df, out_fields, out_streets)
@@ -206,7 +206,11 @@ def count_delays_by_parts(gdf, data):
 
         # Update intersection count for the current part
         gdf.at[index, 'count'] = intersection_count
-    df_count = assign_color(gdf)
+    if gdf.empty:
+        data['count'] = 0
+        df_count = assign_color(data)
+    else:
+        df_count = assign_color(gdf)
 
     return df_count
 
