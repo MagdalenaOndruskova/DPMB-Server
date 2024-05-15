@@ -96,6 +96,12 @@ def init_data():
     scheduler.start()
 
 
+@app.get("/recount_data/")
+async def recount_data():
+    os.remove("./datasets/data_per_day.csv")
+    print("data removed")
+    update_data()
+
 @app.get("/reverse_geocode/street/")
 async def get_street(longitude: float, latitude: float, fromTime: str, toTime: str):
     """
