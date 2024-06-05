@@ -1,4 +1,4 @@
-# WAZE DATA ANALYSIS (server)
+# WAZE DATA ANALYSIS (backend application)
 
 This project was created as Master's thesis at the Faculty of Information Technology, 
 Brno university of Technology. 
