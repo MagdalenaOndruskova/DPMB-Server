@@ -79,6 +79,7 @@ def update_data():
         counts.to_csv(file_path, index=False)
     else:
         # file does not exist - create new one
+        print("prepocitavam data")
         last_value = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
         now_value = (datetime.now() + timedelta(hours=5)).strftime('%Y-%m-%d %H:%M:%S')
         counts = get_final_counts(last_value, now_value)
@@ -101,6 +102,7 @@ async def recount_data():
     os.remove("./datasets/data_per_day.csv")
     print("data removed")
     update_data()
+    print("done")
 
 @app.get("/reverse_geocode/street/")
 async def get_street(longitude: float, latitude: float, fromTime: str, toTime: str):
@@ -143,6 +145,11 @@ async def get_all_delays(body: PlotDataRequestBody):
 
 @app.post("/find_route_by_coord/")
 async def find_route_coord(body: RoutingCoordRequestBody):
+    """
+    Function returns calculated route
+    :param body: Information needed for calculation of route as one object (contains start and end point, time from/to)
+    :return: Calculated route
+    """
     route, streets_dict, src_street, dst_street = find_route_by_coord(body.src_coord, body.dst_coord,
                                                                       body.from_time, body.to_time,
                                                                       streets_gdf, grid_gdf, merged_gdf_streets)
@@ -157,12 +164,22 @@ async def find_route_coord(body: RoutingCoordRequestBody):
 
 @app.post("/draw_alerts/")
 async def get_points_alerts(body: PlotDataRequestBody):
+    """
+    Function returns alerts from waze
+    :param body: One object, containing data about time interval (from date, to date) and list of streets or concrete route
+    :return: Found points
+    """
     points = get_points_for_drawing_alerts(body.from_date, body.to_date, body.streets, body.route)
     return points
 
 
 @app.post("/data_for_plot_drawer/")
 async def get_data_for_plot_drawer(body: PlotDataRequestBody):
+    """
+    Function returns basic statistics about traffic situation
+    :param body: One object, containing data about time interval (from date, to date) and list of streets or concrete route
+    :return: Calculated statistics
+    """
     if not body.streets and not body.route:
         data_jams, data_alerts, time, speedKMH, delay, level, length = \
             load_data_from_file(body.from_date, body.to_date)
@@ -181,6 +198,12 @@ async def get_data_for_plot_drawer(body: PlotDataRequestBody):
 
 @app.post("/data_for_plot_streets/")
 async def get_data_for_plot_bar(body: PlotDataRequestBody):
+    """
+    Function returns data needed for bar charts (critical streets)
+
+    :param body: One object, containing data about time interval (from date, to date) and list of streets or concrete route
+    :return: Data for visualization in bar charts
+    """
     streets_jams, values_jams, streets_alerts, values_alerts = get_data_for_plot_bars(body)
     return {"streets_jams": streets_jams,
             "values_jams": values_jams,
@@ -190,16 +213,34 @@ async def get_data_for_plot_bar(body: PlotDataRequestBody):
 
 @app.post("/data_for_plot_alerts/")
 async def get_data_for_plot_pies(body: PlotDataRequestBody):
+    """
+    Function returns data needed for visualization of count of different alert types
+
+    :param body: One object, containing data about time interval (from date, to date) and list of streets or concrete route
+    :return:  Data for visualization
+    """
     return get_data_for_plot_alerts_type(body)
 
 
 @app.post("/data_for_plot_critical_streets/")
 async def get_data_for_plot_critical_streets(body: PlotDataRequestBody):
+    """
+    Function returns calculated critical streets statistics
+
+    :param body: One object, containing data about time interval (from date, to date) and list of streets or concrete route
+    :return: Data
+    """
     return get_data_for_plot_critical_streets_alerts(body)
 
 
 @app.post("/send_mail/")
 async def send_mail(email: EmailSchema):
+    """
+    Function sends email with received data. Used for sending email from application with user suggestions etc.
+
+    :param email: content of email
+    :return: OK, if email was succesfully sended
+    """
     template = f"""
         <html>
         <body>
@@ -230,6 +271,11 @@ async def send_mail(email: EmailSchema):
 
 @app.get("/full_data/")
 async def get_full_data():
+    """
+    Function used for returning all data in precalculated dataset
+
+    :return:  all data of alerts and jams
+    """
     file_path = "datasets/data_per_day.csv"
 
     df = pd.read_csv(file_path)
